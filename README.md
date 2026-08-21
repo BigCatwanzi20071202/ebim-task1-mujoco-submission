@@ -140,7 +140,7 @@ The original Task 1 compose stack and `release/Dockerfile.eval` remain under the
 
 - Upstream Task 1 benchmark base: `12bb48d1c1554c581c7abc2d9ee44df13c76b1df`.
 - Frozen O/C/Y stabilization base: `91d50d0e3bf3ea3949de7cad59ab96858e46cf9c`.
-- Final submission commit: pending review; this worktree has not been committed or pushed.
+- The submitted revision is the `main` branch of this repository.
 
 ## License
 
