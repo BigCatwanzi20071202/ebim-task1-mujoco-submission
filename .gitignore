@@ -1,0 +1,99 @@
+# Omniverse
+**/*.dmp
+**/.thumbs
+
+# Python
+.DS_Store
+**/*.egg-info/
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+**/*.pb
+
+# IDE
+**/.idea/
+**/.vscode/
+# Don't ignore the top-level .vscode directory as it is
+# used to configure VS Code settings
+# !.vscode
+
+
+# Outputs
+assets/deprecated/
+DEMO/
+**/runs/*
+**/logs/*
+**/recordings/*
+**/output/*
+**/outputs/*
+**/videos/*
+**/wandb/*
+**/.neptune/*
+docker/artifacts/
+*.tmp
+*.npz
+
+# Isaac-Sim packman
+_isaac_sim*
+_repo
+_build
+.lastformat
+
+# LSP
+pyrightconfig.json
+
+# virtual environment
+.venv/
+.env/
+venv/
+**/.env
+
+# Task 1 large assets — not tracked in git; download separately (OneDrive).
+# See task1_isaacsim/README.md and task1_isaacsim/scripts/download_large_assets.sh
+task1_isaacsim/assets/Robotiq_2f_85_with_d405_mobile_fr3_duo_v0_2.usd
+task1_isaacsim/cable_world/assets/table_board_fixture/Assets/board_segment.usd
+task1_isaacsim/cable_world/assets/table_board_fixture/Assets/board_segment_upper_right.usd
+
+# agent
+.claude/
+.codex
+
+# --- Org-standard additions (normalization pass) ---
+
+# Python tooling caches
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Data — never commit large artifacts
+*.zip
+!assets/Aloha_mobile_fr3_duo.zip
+*.tar.gz
+*.h5
+*.hdf5
+*.parquet
+*.bag
+*.db3
+*.mcap
+
+# Models / checkpoints
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.onnx
+
+# Secrets — defense in depth
+*.pem
+*.key
+*.env.*
+!.env.example
+!docker/.env.base
+!task1_isaacsim/isaaclab_overlay/.env.ros2_jazzy
+
+# task1_mujoco outputs
+task1_mujoco/robotiq_duo_full_scene_minimal_core/build/
+task1_mujoco/**/mnet_out/
+task1_mujoco/MUJOCO_LOG.TXT
