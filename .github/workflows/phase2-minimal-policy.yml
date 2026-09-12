@@ -18,3 +18,12 @@ jobs:
         run: docker build --pull -t ggboy-task1-phase2-safe-hold:20260912 .
       - name: Run in-container self-test
         run: docker run --rm ggboy-task1-phase2-safe-hold:20260912 self-test
+      - name: Launch policy without a robot graph and verify fail-closed behavior
+        run: |
+          set +e
+          docker run --rm ggboy-task1-phase2-safe-hold:20260912 run --startup-timeout 1 > launch.log 2>&1
+          code=$?
+          set -e
+          cat launch.log
+          test "$code" -eq 3
+          grep -q STARTUP_TIMEOUT_FAIL_CLOSED launch.log
