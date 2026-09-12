@@ -71,6 +71,7 @@ python3 -m unittest discover -s phase2_minimal_policy/tests -v
 python3 phase2_minimal_policy/policy.py self-test
 ```
 
-GitHub Actions repeats the source tests, builds the image from a clean checkout, and runs
-the in-container self-test. A real ROS graph and physical robot are not available in CI;
-live topic discovery remains an organizer-site requirement.
+GitHub Actions repeats the source tests, builds the image from a clean checkout, runs
+the in-container self-test, and launches the policy without a ROS graph to verify the
+documented timeout and fail-closed exit. A physical robot is not available in CI; live
+topic discovery remains an organizer-site requirement.
