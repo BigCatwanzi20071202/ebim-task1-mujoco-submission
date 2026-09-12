@@ -1,147 +1,76 @@
-# EBiM Task 1 — Cable Management (MuJoCo)
+# GG boy — EBiM Task 1 Phase II minimal safe-hold policy
 
-A runnable EBiM 2026 Phase I Task 1 submission for cable routing with the Mobile FR3 Duo in MuJoCo.
+This pinned branch contains a deliberately simple, runnable Phase II baseline for
+Task 1 (Cable Routing & Plugging). It observes both FR3 measured-joint-state topics
+and sends **no robot, gripper, base, or spine commands**. Its expected Task 1 score
+is zero. It is submitted to preserve an honest runnable baseline; it does not claim
+cable routing, plugging, simulation success, or real-robot success.
 
-## Submission
+The Phase I MuJoCo submission remains under `task1_mujoco/`. The Phase II technical
+report remains under `phase2_technical_report/`.
 
-| Field | Value |
-|---|---|
-| Competition | EBiM Competition 2026, Phase I — Simulation |
-| Track | Track 1 / Task 1 |
-| Simulator | MuJoCo 3.9.0 |
-| Robot | Mobile FR3 Duo with dual Robotiq 2F-85 grippers |
-| Task | Cable Management / cable routing |
-| Main entry | `/ws/sim/main.py` via the `ebim` launcher |
-| Container | `ebim-task1-mujoco:latest` |
+## Exact build and launch commands
 
-## Requirements
-
-- Linux x86_64.
-- Docker Engine.
-- Docker Compose v2 only when using the included `docker-run.sh` helper.
-- For graphical or official ManipulationNet evaluation: an NVIDIA GPU, NVIDIA driver, NVIDIA Container Toolkit, and X11 display access.
-
-The retained Task 1 MuJoCo files are ordinary Git objects; this submission does not require Git LFS.
-
-## Build
-
-Clone the final public repository and build from its root:
+From a clean checkout of the pinned commit:
 
 ```bash
-git clone https://github.com/BigCatwanzi20071202/ebim-task1-mujoco-submission.git
-cd ebim-task1-mujoco-submission
-
-docker build --pull -t ebim-task1-mujoco:latest .
-```
-
-## Run
-
-Show the available in-container entry points:
-
-```bash
-docker run --rm ebim-task1-mujoco:latest
-```
-
-Run the simulator with a viewer on a native Linux X11 desktop:
-
-```bash
-xhost +local:docker
-docker run --rm -it --init \
-  --network host --ipc host --gpus all \
-  -e DISPLAY \
-  -e NVIDIA_VISIBLE_DEVICES=all \
-  -e NVIDIA_DRIVER_CAPABILITIES=all \
-  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-  ebim-task1-mujoco:latest \
-  ebim sim
-```
-
-`ebim sim` starts `main.py --input keyboard --mnet`. Additional simulator arguments may be appended after `ebim sim`.
-
-### Local Baseline
-
-The deterministic local O → C → Y validation is separate from the official ManipulationNet run:
-
-```bash
+docker build --pull -t ggboy-task1-phase2-safe-hold:20260912 .
+docker run --rm ggboy-task1-phase2-safe-hold:20260912 self-test
 docker run --rm --init --network host --ipc host \
-  ebim-task1-mujoco:latest \
-  ebim baseline-ocy --no-viewer
+  -e ROS_DOMAIN_ID=0 \
+  -e RMW_IMPLEMENTATION=rmw_fastrtps_cpp \
+  ggboy-task1-phase2-safe-hold:20260912 run
 ```
 
-Remove `--no-viewer` and use the X11/GPU options from the viewer command above to inspect the motion graphically.
+The operator may replace `RMW_IMPLEMENTATION` with the testbed's installed ROS 2
+middleware. If the host uses CycloneDDS, pass its normal middleware setting and
+mounted DDS configuration. Runtime internet access is not required.
 
-## ManipulationNet Evaluation
+Successful startup requires one valid seven-joint `sensor_msgs/msg/JointState`
+message from each of:
 
-ManipulationNet evaluation requires a registered team's configuration. Before running it, update:
+- `/left/franka_robot_state_broadcaster/measured_joint_states`
+- `/right/franka_robot_state_broadcaster/measured_joint_states`
 
-```text
-task1_mujoco/mnet_client-ros_2/config/team_config.json
-```
+The process reports `ACTIVE_SAFE_HOLD_NO_COMMAND` and remains alive after both streams
+are observed. It exits nonzero if either stream is missing, malformed, stale, or stops.
+It never creates a publisher, action client, service client, or robot network socket.
 
-Set the camera topic to `/mujoco/camera/image_raw`, set `file_dir` to `/ws/out`, and keep credentials outside published commits. The repository contains only the public `TEST0000` placeholder.
+## Environment and dependencies
 
-Create the evidence-output directory:
+- Linux x86_64 with Docker Engine
+- ROS 2 Jazzy DDS network access to the robot-side ROS graph
+- Base image: `ros:jazzy-ros-base-noble`
+- No CUDA, GPU, model weights, dataset, credentials, or runtime network download
+- Expected monitoring rate: callbacks at the source topic rate; health check at 10 Hz
+
+## Hardware assumptions
+
+- Mobile FR3 Duo controllers and state broadcasters are already started by the testbed operator.
+- Both measured-joint-state topics above use seven finite positions with unique joint names.
+- `ROS_DOMAIN_ID`, middleware, DDS discovery and host networking match the testbed.
+- The controller is already in the facility-approved stationary/holding state.
+- Arms, grippers, base and spine start in a safe pose chosen by the operator.
+- No object pose, camera pose, fiducial, hard-coded task pose or operator input is consumed.
+- Between rounds, the operator performs the normal physical reset; this policy changes nothing.
+
+## Safety and scoring behavior
+
+This baseline is autonomous in the narrow sense that it starts and monitors state without
+operator input. It intentionally attempts none of the Task 1 objectives and should receive
+zero task points. No externally supplied object poses are used. The organizer-released
+trajectory dataset informed earlier diagnostics but is not loaded by this baseline.
+
+The operator has full authority to stop the container or robot at any time. Missing or stale
+state causes a fail-closed exit. The absence of command paths is intentional and testable.
+
+## Local source test
 
 ```bash
-mkdir -p mnet_out
+python3 -m unittest discover -s phase2_minimal_policy/tests -v
+python3 phase2_minimal_policy/policy.py self-test
 ```
 
-Check registration and connectivity without consuming a scored attempt:
-
-```bash
-docker run --rm -it --network host --ipc host \
-  -v "$PWD/task1_mujoco/mnet_client-ros_2/config/team_config.json:/ws/install/mnet_client/share/mnet_client/config/team_config.json:ro" \
-  -v "$PWD/mnet_out:/ws/out" \
-  ebim-task1-mujoco:latest \
-  ebim ros2 run mnet_client connection_test
-```
-
-Start the simulator in one terminal using the viewer command from the previous section. In a second terminal, start the official, rate-limited ManipulationNet submission client:
-
-```bash
-docker run --rm -it --network host --ipc host \
-  -v "$PWD/task1_mujoco/mnet_client-ros_2/config/team_config.json:/ws/install/mnet_client/share/mnet_client/config/team_config.json:ro" \
-  -v "$PWD/mnet_out:/ws/out" \
-  ebim-task1-mujoco:latest \
-  ebim submit
-```
-
-The project helper exposes the equivalent client actions as:
-
-```bash
-cd task1_mujoco
-./docker-run.sh connection-test
-./docker-run.sh submit
-```
-
-ManipulationNet performance submission is distinct from the EBiM repository submission form.
-
-## Repository Layout
-
-```text
-.
-├── Dockerfile
-├── README.md
-├── LICENSE
-├── LICENSES/
-├── NOTICE
-├── CONTRIBUTORS.md
-├── .dockerignore
-└── task1_mujoco/
-    ├── docker-run.sh
-    ├── robotiq_duo_full_scene_minimal_core/
-    ├── mnet_client-ros_2/
-    └── teleop_ros2/
-```
-
-The original Task 1 compose stack and `release/Dockerfile.eval` remain under the simulator directory for compatibility. The root `Dockerfile` is the standard competition build entry and uses the Git repository root as its build context.
-
-## Reproducibility
-
-- Upstream Task 1 benchmark base: `12bb48d1c1554c581c7abc2d9ee44df13c76b1df`.
-- Frozen O/C/Y stabilization base: `91d50d0e3bf3ea3949de7cad59ab96858e46cf9c`.
-- The submitted revision is the `main` branch of this repository.
-
-## License
-
-The repository is distributed under the Apache License 2.0. See `LICENSE`, `NOTICE`, `CONTRIBUTORS.md`, `LICENSES/`, `task1_mujoco/LICENSE`, and `task1_mujoco/mnet_client-ros_2/LICENSE` for upstream and third-party attribution.
+GitHub Actions repeats the source tests, builds the image from a clean checkout, and runs
+the in-container self-test. A real ROS graph and physical robot are not available in CI;
+live topic discovery remains an organizer-site requirement.
