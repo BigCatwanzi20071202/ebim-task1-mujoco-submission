@@ -1,0 +1,20 @@
+name: Phase II minimal policy verification
+
+on:
+  push:
+    branches: [phase2-minimal-safe-hold-20260912]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source tests
+        run: |
+          python3 -m unittest discover -s phase2_minimal_policy/tests -v
+          python3 phase2_minimal_policy/policy.py self-test
+      - name: Build container from clean checkout
+        run: docker build --pull -t ggboy-task1-phase2-safe-hold:20260912 .
+      - name: Run in-container self-test
+        run: docker run --rm ggboy-task1-phase2-safe-hold:20260912 self-test
