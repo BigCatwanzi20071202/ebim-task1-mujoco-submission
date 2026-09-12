@@ -1,5 +1,7 @@
 *
 !Dockerfile
+!phase2_minimal_policy/
+!phase2_minimal_policy/**
 !task1_mujoco/
 !task1_mujoco/robotiq_duo_full_scene_minimal_core/**
 !task1_mujoco/mnet_client-ros_2/**
