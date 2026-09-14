@@ -26,4 +26,12 @@ CAMERA_TOPICS = {
     "right_rgb": "/wrist_camera_right/color/image_raw",
     "right_depth": "/wrist_camera_right/depth/image_rect_raw",
 }
+GRIPPER_COMMAND_TOPICS = {
+    "left": "/left/gripper/gripper_client/target_gripper_width_percent",
+    "right": "/right/gripper/gripper_client/target_gripper_width_percent",
+}
+GRIPPER_ACTIONS = {
+    "left": "/left/gripper/robotiq_gripper_controller/gripper_cmd",
+    "right": "/right/gripper/robotiq_gripper_controller/gripper_cmd",
+}
 MOTION_ENABLED = False

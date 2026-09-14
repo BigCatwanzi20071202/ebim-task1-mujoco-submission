@@ -1,5 +1,9 @@
 *
 !Dockerfile
+!real_robot/
+!real_robot/**
+!tests/
+!tests/**
 !task1_mujoco/
 !task1_mujoco/robotiq_duo_full_scene_minimal_core/**
 !task1_mujoco/mnet_client-ros_2/**

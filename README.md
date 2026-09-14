@@ -42,6 +42,30 @@ Show the available in-container entry points:
 docker run --rm ebim-task1-mujoco:latest
 ```
 
+### Real-robot interface preflight
+
+The `real-fr3` branch includes the recorded Shanghai ROS 2 interface adapters. Before any
+motion test, run the graph probe on the organizer network:
+
+```bash
+docker run --rm --network host \
+  -v "$PWD/probe-output:/out" \
+  ebim-task1-mujoco:latest \
+  ebim real-probe --output /out/site-probe.json
+```
+
+The probe creates no publisher or action client and sends no command. It requires both
+PTP action servers, both arm state/pose topics, and both gripper interfaces to match the
+recorded names and message types. A nonzero exit blocks motion enablement.
+
+The PTP adapter validates joint and velocity bounds supplied by the installation, waits
+for goal acknowledgement and result, cancels on timeout, and only accepts Franka
+`TARGET_REACHED`. The gripper adapter publishes the recorded 0-1 target width command.
+Both adapters require explicit `motion_enabled=True`; no shipped CLI enables them.
+
+This completes the missing ROS transport implementation. It does not turn the MuJoCo
+baseline or the diagnostic learned models into a validated autonomous real-robot policy.
+
 Run the simulator with a viewer on a native Linux X11 desktop:
 
 ```bash

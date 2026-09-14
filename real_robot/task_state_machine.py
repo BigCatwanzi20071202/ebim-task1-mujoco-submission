@@ -31,4 +31,6 @@ class TaskStateMachine:
         paths = {"o": ["LOCATE", "PLAN", "PREWRAP", "WRAP", "SETTLE", "VERIFY"],
                  "c": ["LOCATE", "PLAN", "MOUTH", "SEAT", "RETAIN", "VERIFY"],
                  "y": ["LOCATE", "PLAN", "TRANSPORT", "INSPECTION", "HOLD", "VERIFY"]}
-        return [f"{stage.upper()}:{state}" for stage in self.stages for state in paths[stage]] + ["TASK:SUCCEEDED"]
+        if not self.stages or any(stage not in paths for stage in self.stages):
+            raise ValueError("nonempty O/C/Y stages required")
+        return [f"{stage.upper()}:{state}" for stage in self.stages for state in paths[stage]] + ["PREVIEW:COMPLETE (task success not evaluated)"]

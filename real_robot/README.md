@@ -1,13 +1,24 @@
 # FR3 real-robot O/C/Y migration (v0.1)
 
-This package is a fail-safe, importable first migration layer. It performs no robot or
-gripper movement. `motion_enabled` defaults to `False`; the FR3 PTP goal is deliberately
-unimplemented until the onsite output of `ros2 interface show franka_msgs/action/PTPMotion`
-is recorded. Camera intrinsics must come from confirmed CameraInfo and are never hard-coded.
+This package implements the recorded dual-arm `franka_msgs/action/PTPMotion` endpoints
+with bounded waits, rejection checks and cancellation on timeout. It also implements the
+recorded 0-1 Robotiq target-width topics. Both adapters require an initialized ROS node and
+explicit `motion_enabled=True`; no included CLI enables motion. Installation-approved
+joint, velocity and tolerance limits remain mandatory. Camera intrinsics must come from
+confirmed CameraInfo and are never hard-coded.
 
 Run offline with `python -m real_robot.run_real_ocy --stage ocy --dry-run`. Robot and
 perception dependency checks are available through `--check-robot` and
 `--check-perception`; ROS2 imports are lazy so dry-run works without ROS2.
+
+After both arm and gripper controllers start on the organizer network, run:
+
+```bash
+python -m real_robot.site_probe --output /tmp/ggboy-site-probe.json
+```
+
+It only inspects ROS graph names and types. It sends no command and exits nonzero on any
+missing or mismatched required interface.
 
 ## Baseline audit and migration boundary
 
@@ -31,8 +42,8 @@ thresholds are not real safety limits.
 
 ## Onsite work still required
 
-- Confirm ROS2 message/action schemas, QoS and live connectivity for both pose topics and
-  both PTP action servers; then design a separately reviewed motion implementation.
+- Run the site probe and confirm QoS and live connectivity. Depending on the installed
+  `franka_ros2` revision, `current_pose` may require best-effort subscriber QoS.
 - Confirm common task frame, camera optical frames, TF tree, timestamps and calibration.
 - Confirm each camera's CameraInfo topics, distortion model, depth units/alignment and sync.
 - Confirm Robotiq driver topics/actions/services, feedback, units, limits and safe stop.

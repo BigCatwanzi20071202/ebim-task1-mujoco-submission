@@ -16,6 +16,8 @@ case "${1:-help}" in
     client)  exec ros2 run mnet_client local_test ;;
     submit)  exec ros2 run mnet_client submission ;;
     smoke)   exec python3 main.py --no-viewer ;;
+    real-probe) shift; cd /ws; exec python3 -m real_robot.site_probe --live "$@" ;;
+    real-preview) shift; cd /ws; exec python3 -m real_robot.run_real_ocy --dry-run "$@" ;;
     compose) exec cat /ws/sim/release/compose.dist.yaml ;;
     shell)   exec bash ;;
     help|--help|-h)
@@ -29,6 +31,8 @@ usage: ebim <command>
   client       ManipulationNet local_test client (interactive)
   submit       ManipulationNet OFFICIAL submission client (rate-limited!)
   smoke        headless self-check ("init/smoke ok")
+  real-probe   inspect required real-robot ROS graph without sending commands
+  real-preview print the real-robot state-machine preview without sending commands
   compose      print the distribution compose file (redirect it to a file:
                docker run --rm <image> ebim compose > compose.yaml)
   shell        interactive shell with ROS sourced

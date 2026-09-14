@@ -20,7 +20,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--stage", choices=("o", "c", "oc", "ocy"), default="ocy")
     args = parser.parse_args(argv)
     print(f"motion_enabled={MOTION_ENABLED}")
-    print("movement_implementation=DISABLED (PTPMotion schema unconfirmed)")
+    print("movement_implementation=ADAPTER_AVAILABLE; this preview CLI never enables or sends motion")
     if args.check_robot:
         result = FR3Interface(False).check()
         print(f"robot_check={'AVAILABLE' if result.ros2_available else 'UNAVAILABLE'}: {result.detail}")

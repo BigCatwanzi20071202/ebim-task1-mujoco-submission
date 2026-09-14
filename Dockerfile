@@ -24,6 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libegl1 \
     libvulkan1 \
     ros-humble-cv-bridge \
+    ros-humble-control-msgs \
+    ros-humble-franka-msgs \
     python3-opencv \
  && rm -rf /var/lib/apt/lists/*
 
@@ -44,6 +46,10 @@ COPY ${TELEOP_PKGS_DIR}/vr_teleop_publisher /ws/src/teleop_ros2/vr_teleop_publis
 RUN . /opt/ros/humble/setup.sh && colcon build
 
 COPY ${SIM_DIR} /ws/sim
+COPY real_robot /ws/real_robot
+COPY tests /ws/tests
+ENV PYTHONPATH=/ws
+RUN python3 -m unittest discover -s /ws/tests -v
 RUN echo 'source /opt/ros/humble/setup.bash && source /ws/install/setup.bash' >> /root/.bashrc \
  && install -m 755 /ws/sim/release/ebim /usr/local/bin/ebim
 
